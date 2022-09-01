@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 846712514}
   - component: {fileID: 846712513}
   m_Layer: 0
-  m_Name: MixedRealityToolkit
+  m_Name: MixedRealityToolkit (Inactive)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -514,8 +514,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _virtualFollowerPrefab: {fileID: 2028675750}
-  _cameraDistanceLimits: {x: 0.5, y: 2.0017583}
-  speedFactor: 1
+  _cameraMaxLimit: 2
+  _cameraMinLimit: 1
+  speedFactor: 0.75
 --- !u!1 &1381828953
 GameObject:
   m_ObjectHideFlags: 0
