@@ -6,34 +6,56 @@ public class MascotFollowerScript : MonoBehaviour
 {
     // Prefab for virtual follower
     public GameObject _virtualFollowerPrefab;
+    private Animator _virtualFollowerAnimator;
+    private Renderer _virtualFollowerRenderer;
 
     // Max distance from camera (how far off the camera should be to start movement towards the camera)
-    public float _maxCameraDistance = 5f;
-
+    public float _cameraMaxLimit = 2f;
     // Min distance from the camera (how far off the mascot should come close to the camera to stop the movement)
-    public float _minCameraDistance = 2f;
-
-    //public RangeAttribute _cameraDistanceLimits = new RangeAttribute(2f, 5f);
+    public float _cameraMinLimit = 0.5f;
 
     private Transform _hololensCameraTransform;
 
-    public Animation _walkAnimation;
-    public Animation _idleAnimation;
+    private bool isWalking;
+    public float speedFactor = 1f;
 
     // Start is called before the first frame update
     void Start()
     {
         _hololensCameraTransform = Camera.main.transform;
+        _virtualFollowerAnimator = _virtualFollowerPrefab.GetComponent<Animator>();
+        _virtualFollowerRenderer = _virtualFollowerPrefab.GetComponent<Renderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (IsMascotTooSlow())
+        // turn towards camera/player while visible by camera
+        if (_virtualFollowerRenderer.isVisible)
         {
-            // Walk towards Camera
-        } else if (IsMascotTooClose()) {
-            // Stop Walking
+            _virtualFollowerPrefab.transform.LookAt(new Vector3(_hololensCameraTransform.position.x, _virtualFollowerPrefab.transform.position.y, _hololensCameraTransform.position.z));
+        }
+
+        if (isWalking)
+        {
+            // calculate direction towards camera and walk towards it
+            Vector3 dir = (_hololensCameraTransform.position - _virtualFollowerPrefab.transform.position).normalized;
+            dir *= speedFactor * Time.deltaTime;
+            Vector3 newPos = new Vector3(_virtualFollowerPrefab.transform.position.x + dir.x, _virtualFollowerPrefab.transform.position.y, _virtualFollowerPrefab.transform.position.z + dir.z);
+            _virtualFollowerPrefab.transform.position = newPos;
+
+            if (IsMascotTooClose())
+            {
+                isWalking = false;
+                _virtualFollowerAnimator.Play("Idle");
+            }
+        } else
+        {
+            if (IsMascotTooSlow())
+            {
+                isWalking = true;
+                _virtualFollowerAnimator.Play("Walk");
+            }
         }
     }
 
@@ -44,7 +66,7 @@ public class MascotFollowerScript : MonoBehaviour
         return Vector2.Distance(_a, _b);
     }
 
-    private bool IsMascotTooSlow() => GetFlatDistance(_hololensCameraTransform.position, _virtualFollowerPrefab.transform.position) > _maxCameraDistance;
+    private bool IsMascotTooSlow() => GetFlatDistance(_hololensCameraTransform.position, _virtualFollowerPrefab.transform.position) > _cameraMaxLimit;
 
-    private bool IsMascotTooClose() => GetFlatDistance(_hololensCameraTransform.position, _virtualFollowerPrefab.transform.position) < _minCameraDistance;
+    private bool IsMascotTooClose() => GetFlatDistance(_hololensCameraTransform.position, _virtualFollowerPrefab.transform.position) < _cameraMinLimit;
 }
