@@ -36,10 +36,14 @@ public class AzureSpatialAnchorsScript : MonoBehaviour
     /// Used to keep track of all the created Anchor IDs
     /// </summary>
     private List<String> _createdAnchorIDs = new List<String>();
+    
+    [SerializeField]
+    [Tooltip("The base URL for the example sharing service.")]
+    private string baseSharingUrl = "";
 
     public GameObject anchorGameObjectPrefab;
 
-    private const int ANCHOR_EXPIRATION_IN_DAYS = 365;
+    private const int ANCHOR_EXPIRATION_IN_DAYS = 60;
     #endregion
 
     #region MonoBehavior Base
@@ -162,7 +166,8 @@ public class AzureSpatialAnchorsScript : MonoBehaviour
                 //anchorGameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
 
                 GameObject anchorGameObject = Instantiate(anchorGameObjectPrefab);
-                anchorGameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
+                anchorGameObject.transform.Find("Sphere").gameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
+                anchorGameObject.GetComponent<TextMesh>().text = $"{cloudSpatialAnchor.Identifier}";
 
                 // Link to Cloud Anchor
                 anchorGameObject.AddComponent<CloudNativeAnchor>().CloudToNative(cloudSpatialAnchor);
@@ -207,13 +212,16 @@ public class AzureSpatialAnchorsScript : MonoBehaviour
         //anchorGameObject.transform.localScale = Vector3.one * 0.1f;
 
         GameObject anchorGameObject = Instantiate(anchorGameObjectPrefab, position, Quaternion.identity);
-        //anchorGameObject.transform.rotation = orientationTowardsHead;
+        anchorGameObject.transform.rotation = orientationTowardsHead;
 
         //Add and configure ASA components
         CloudNativeAnchor cloudNativeAnchor = anchorGameObject.AddComponent<CloudNativeAnchor>();
         await cloudNativeAnchor.NativeToCloud();
         CloudSpatialAnchor cloudSpatialAnchor = cloudNativeAnchor.CloudAnchor;
         cloudSpatialAnchor.Expiration = DateTimeOffset.Now.AddDays(ANCHOR_EXPIRATION_IN_DAYS);
+
+        // set ID of cloud anchor in UI
+        anchorGameObject.GetComponent<TextMesh>().text = $"{cloudSpatialAnchor.Identifier}";
 
         //Collect Environment Data
         while (!_spatialAnchorManager.IsReadyForCreate)
@@ -239,7 +247,8 @@ public class AzureSpatialAnchorsScript : MonoBehaviour
             Debug.Log($"ASA - Saved cloud anchor with ID: {cloudSpatialAnchor.Identifier}");
             _foundOrCreatedAnchorGameObjects.Add(anchorGameObject);
             _createdAnchorIDs.Add(cloudSpatialAnchor.Identifier);
-            anchorGameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+            anchorGameObject.transform.Find("Sphere").gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+            anchorGameObject.GetComponent<TextMesh>().text = $"{cloudSpatialAnchor.Identifier}";
         }
         catch (Exception exception)
         {
